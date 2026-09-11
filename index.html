@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dreamcatcher - Dream Journal &amp; Generator</title>
+<style>
+:root{--bg:#0c0a14;--ink:#ddd6f0;--dim:#857d9e;--accent:#c084fc;--line:#221c33;--card:#161226}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:26px 14px}
+h1{font-size:24px;letter-spacing:6px;color:var(--accent);text-transform:uppercase}
+.sub{color:var(--dim);letter-spacing:2px;font-size:10.5px;text-transform:uppercase;margin-top:6px}
+#stats{font-size:12px;color:var(--dim);letter-spacing:1.5px;text-transform:uppercase;margin:14px 0;line-height:2}
+#stats b{color:var(--accent)}
+textarea{background:var(--card);border:1px solid var(--line);border-radius:11px;color:var(--ink);font-family:inherit;font-size:13px;padding:13px;width:min(560px,94vw);height:100px;outline:none;resize:vertical;line-height:1.6}
+textarea:focus{border-color:var(--accent)}
+button{cursor:pointer;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:11px 16px;font-family:inherit;font-size:12.5px;letter-spacing:1px;text-transform:uppercase;transition:border-color .15s;margin:10px 4px 0}
+button:hover{border-color:var(--accent)}
+#generated{margin-top:14px;width:min(560px,94vw);background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:11px;padding:14px 16px;font-size:13px;line-height:1.7;display:none}
+#journal{width:min(560px,94vw);margin-top:14px;display:grid;gap:9px}
+.entry{background:var(--card);border:1px solid var(--line);border-radius:11px;padding:13px 15px;font-size:12.5px;line-height:1.65}
+.entry .when{color:var(--dim);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.entry .sym{color:var(--accent);font-size:10.5px;letter-spacing:1px;margin-top:6px;text-transform:uppercase}
+</style>
+</head>
+<body>
+<h1>Dreamcatcher</h1>
+<div class="sub">catch them before they evaporate</div>
+<div id="stats"></div>
+<textarea id="dream" placeholder="I was back in high school but the halls were an airport..."></textarea>
+<div>
+<button id="catch">Catch it</button>
+<button id="generate">Generate a dream</button>
+</div>
+<div id="generated"></div>
+<div id="journal"></div>
+<script>
+const $=id=>document.getElementById(id);
+let dreams=JSON.parse(localStorage.getItem('dreamcatcher')||'[]');
+function save(){localStorage.setItem('dreamcatcher',JSON.stringify(dreams));}
+const SYMBOLS=['water','flight','teeth','chase','falling','a door','an animal','school','an ex','being late','the moon','endless stairs'];
+const FRAG1=['You are in a library where every book is blank','Your teeth politely resign, one by one','You can fly, but only at walking speed','The house you grew up in has a new room','You are late for an exam in a subject you invented','A whale swims past the office window','Everyone at the party is you at different ages','The elevator only goes sideways'];
+const FRAG2=['and nobody else finds it strange','and the moon is taking notes','but the exit keeps moving','and your shoes are loudly wrong','while a small dog explains taxes','and the sky is the wrong texture','until you realize it was a Tuesday the whole time','but the door opens onto the same door'];
+function symbolsOf(t){const l=t.toLowerCase();return SYMBOLS.filter(s=>l.includes(s));}
+function render(){
+ $('stats').innerHTML='DREAMS CAUGHT <b>'+dreams.length+'</b>';
+ const el=$('journal');el.innerHTML='';
+ dreams.forEach(d=>{
+  const e=document.createElement('div');e.className='entry';
+  e.innerHTML='<div class="when">'+d.when+'</div>'+d.text.replace(/</g,'&lt;')+(d.sym.length?'<div class="sym">symbols: '+d.sym.join(' &middot; ')+'</div>':'');
+  el.appendChild(e);});
+}
+$('catch').onclick=()=>{
+ const t=$('dream').value.trim();if(!t)return;
+ dreams.unshift({text:t,when:new Date().toLocaleString(),sym:symbolsOf(t)});
+ $('dream').value='';save();render();};
+$('generate').onclick=()=>{
+ const g=FRAG1[Math.floor(Math.random()*FRAG1.length)]+' '+FRAG2[Math.floor(Math.random()*FRAG2.length)]+'.';
+ const d=$('generated');d.style.display='block';d.textContent='Tonight\'s forecast: '+g+' (catch it? it is yours now.)';
+ $('dream').value=g;};
+render();
+</script>
+</body>
+</html>
